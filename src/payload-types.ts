@@ -69,6 +69,13 @@ export interface Config {
   collections: {
     users: User;
     files: File;
+    rooms: Room;
+    speakers: Speaker;
+    events: Event;
+    registrations: Registration;
+    tickets: Ticket;
+    'check-ins': CheckIn;
+    certificates: Certificate;
     'payload-kv': PayloadKv;
     fileFolders: FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -83,6 +90,13 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     files: FilesSelect<false> | FilesSelect<true>;
+    rooms: RoomsSelect<false> | RoomsSelect<true>;
+    speakers: SpeakersSelect<false> | SpeakersSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    registrations: RegistrationsSelect<false> | RegistrationsSelect<true>;
+    tickets: TicketsSelect<false> | TicketsSelect<true>;
+    'check-ins': CheckInsSelect<false> | CheckInsSelect<true>;
+    certificates: CertificatesSelect<false> | CertificatesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     fileFolders: FileFoldersSelect<false> | FileFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -290,6 +304,525 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms".
+ */
+export interface Room {
+  id: number;
+  title: string;
+  description?: string | null;
+  /**
+   * Capacidade máxima de participantes na sala
+   */
+  capacity: number;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers".
+ */
+export interface Speaker {
+  id: number;
+  name: string;
+  professionalTitle: string;
+  /**
+   * Breve biografia ou descrição do palestrante
+   */
+  description?: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  } | null;
+  /**
+   * Foto do palestrante para exibição no site
+   */
+  photo?: (number | null) | File;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  title: string;
+  /**
+   * Descrição completa do evento
+   */
+  description: {
+    root: {
+      type: string;
+      children: {
+        type: any;
+        version: number;
+        [k: string]: unknown;
+      }[];
+      direction: ('ltr' | 'rtl') | null;
+      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
+      indent: number;
+      version: number;
+    };
+    [k: string]: unknown;
+  };
+  /**
+   * Imagem principal do evento para exibição no site
+   */
+  featuredImage?: (number | null) | File;
+  startDate: string;
+  endDate: string;
+  location: string;
+  /**
+   * Número máximo de inscrições permitidas no evento
+   */
+  maxRegistrations?: number | null;
+  /**
+   * Número de dias antes do evento para solicitar reembolso
+   */
+  refundDays?: number | null;
+  eventType: 'event' | 'course';
+  modality: 'in-person' | 'hybrid' | 'virtual';
+  /**
+   * Interno: apenas membros | Externo: aberto ao público
+   */
+  scope: 'internal' | 'external';
+  registrationType: 'internal' | 'external';
+  /**
+   * URL para inscrição em sistema externo
+   */
+  externalRegistrationUrl?: string | null;
+  /**
+   * Defina as categorias de inscrição (ingressos) disponíveis para este evento
+   */
+  categories?:
+    | {
+        title: string;
+        /**
+         * Valor em reais (0 para gratuito)
+         */
+        price: number;
+        description?: string | null;
+        /**
+         * Limite de ingressos disponíveis nesta categoria
+         */
+        maxQuantity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Configure descontos para compras em grupo baseados na quantidade de ingressos
+   */
+  discountGroups?:
+    | {
+        minTickets: number;
+        maxTickets: number;
+        discountType: 'percentage' | 'fixed';
+        discountValue: number;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Defina a programação do evento com as atividades em cada sala
+   */
+  schedule?:
+    | {
+        room: number | Room;
+        date: string;
+        startTime: string;
+        endTime: string;
+        title: string;
+        description?: string | null;
+        /**
+         * Palestrantes desta atividade (opcional)
+         */
+        speakers?: (number | Speaker)[] | null;
+        /**
+         * Limite específico para esta atividade (sobrescreve a sala)
+         */
+        capacity?: number | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Marque se este evento emitirá certificados aos participantes
+   */
+  hasCertificate?: boolean | null;
+  certificateConfig?: {
+    /**
+     * Automática: emitido quando todas as regras forem atendidas | Manual: funcionário emite manualmente
+     */
+    emissionType: 'automatic' | 'manual';
+    /**
+     * Percentual mínimo de presença para emissão do certificado
+     */
+    minimumAttendancePercentage?: number | null;
+    /**
+     * O participante deve responder a pesquisa para receber o certificado
+     */
+    requiresSurvey?: boolean | null;
+    /**
+     * Upload do modelo de certificado em formato .docx com variáveis: {{nome}}, {{oab}}, {{evento}}, {{data}}
+     */
+    certificateTemplate?: (number | null) | File;
+    certificateRules?: string | null;
+  };
+  status: 'draft' | 'published' | 'closed' | 'cancelled';
+  /**
+   * URL amigável do evento (gerada automaticamente)
+   */
+  slug?: string | null;
+  /**
+   * Data limite para inscrições (deixe vazio para usar data de início)
+   */
+  registrationDeadline?: string | null;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registrations".
+ */
+export interface Registration {
+  id: number;
+  buyerName: string;
+  buyerEmail: string;
+  buyerPhone: string;
+  buyerCpf: string;
+  buyerCep: string;
+  /**
+   * Número da OAB do comprador (opcional)
+   */
+  buyerOab?: string | null;
+  /**
+   * Evento relacionado a esta inscrição
+   */
+  event: number | Event;
+  /**
+   * Soma dos valores dos ingressos
+   */
+  ticketsAmount: number;
+  /**
+   * Valor do desconto em grupo
+   */
+  discountAmount?: number | null;
+  /**
+   * Valor final a ser pago
+   */
+  totalAmount: number;
+  /**
+   * Número total de ingressos nesta inscrição
+   */
+  ticketCount: number;
+  /**
+   * Descrição do desconto em grupo aplicado (se houver)
+   */
+  discountGroupApplied?: string | null;
+  paymentMethod?: ('credit_card' | 'debit_card' | 'boleto' | 'pix') | null;
+  paymentStatus?: ('pending' | 'processing' | 'paid' | 'failed' | 'cancelled' | 'refunded') | null;
+  /**
+   * Identificador do pagamento no PagBank
+   */
+  paymentId?: string | null;
+  /**
+   * Identificador do checkout no PagBank
+   */
+  checkoutId?: string | null;
+  /**
+   * URL para finalizar o pagamento
+   */
+  checkoutUrl?: string | null;
+  paidAt?: string | null;
+  refundRequested?: boolean | null;
+  refundRequestedAt?: string | null;
+  refundReason?: string | null;
+  refundStatus?: ('requested' | 'approved' | 'processing' | 'completed' | 'denied') | null;
+  refundDeniedReason?: string | null;
+  refundedAt?: string | null;
+  /**
+   * Identificador do reembolso no PagBank
+   */
+  refundId?: string | null;
+  /**
+   * Código único de identificação da inscrição
+   */
+  referenceId: string;
+  status: 'pending' | 'confirmed' | 'cancelled' | 'refunded';
+  /**
+   * O comprador também é um dos participantes
+   */
+  buyerIsParticipant?: boolean | null;
+  /**
+   * Notas internas sobre esta inscrição
+   */
+  notes?: string | null;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tickets".
+ */
+export interface Ticket {
+  id: number;
+  participantName: string;
+  participantEmail: string;
+  participantPhone: string;
+  /**
+   * Número da OAB do participante (opcional)
+   */
+  participantOab?: string | null;
+  /**
+   * Inscrição (pedido) vinculada a este ingresso
+   */
+  registration: number | Registration;
+  /**
+   * Evento do ingresso
+   */
+  event: number | Event;
+  /**
+   * Categoria do ingresso
+   */
+  categoryTitle: string;
+  /**
+   * Valor pago pela categoria
+   */
+  categoryPrice: number;
+  /**
+   * Identificador da categoria no evento
+   */
+  categoryId?: string | null;
+  /**
+   * Atividades da programação selecionadas para este ingresso
+   */
+  selectedSchedule?:
+    | {
+        /**
+         * Identificador da atividade na programação
+         */
+        scheduleId: string;
+        room: number | Room;
+        activityTitle: string;
+        date: string;
+        startTime: string;
+        endTime: string;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Indica se o participante fez check-in no evento
+   */
+  hasCheckedIn?: boolean | null;
+  /**
+   * Total de check-ins realizados
+   */
+  checkInCount?: number | null;
+  /**
+   * Percentual de presença calculado
+   */
+  attendancePercentage?: number | null;
+  /**
+   * Indica se o participante respondeu a pesquisa de satisfação
+   */
+  surveyCompleted?: boolean | null;
+  surveyCompletedAt?: string | null;
+  /**
+   * Indica se o participante atende aos requisitos para certificado
+   */
+  certificateEligible?: boolean | null;
+  /**
+   * Indica se o certificado foi emitido
+   */
+  certificateIssued?: boolean | null;
+  /**
+   * Código único do ingresso
+   */
+  ticketCode: string;
+  status: 'pending' | 'active' | 'used' | 'cancelled' | 'refunded';
+  /**
+   * Dados codificados no QR Code do ingresso
+   */
+  qrCode?: string | null;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "check-ins".
+ */
+export interface CheckIn {
+  id: number;
+  /**
+   * Ingresso do participante
+   */
+  ticket: number | Ticket;
+  /**
+   * Evento do check-in
+   */
+  event: number | Event;
+  /**
+   * Tipo do check-in realizado
+   */
+  type: 'event' | 'day' | 'room';
+  /**
+   * Sala do check-in (se aplicável)
+   */
+  room?: (number | null) | Room;
+  /**
+   * Identificador da atividade na programação
+   */
+  scheduleId?: string | null;
+  date: string;
+  checkedInAt: string;
+  /**
+   * Como o check-in foi realizado
+   */
+  method: 'qr_code' | 'manual_code' | 'manual_search';
+  /**
+   * Informações do dispositivo que realizou o check-in
+   */
+  deviceInfo?: string | null;
+  /**
+   * Notas adicionais sobre o check-in
+   */
+  notes?: string | null;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates".
+ */
+export interface Certificate {
+  id: number;
+  /**
+   * Ingresso vinculado ao certificado
+   */
+  ticket: number | Ticket;
+  /**
+   * Evento do certificado
+   */
+  event: number | Event;
+  /**
+   * Nome completo do participante
+   */
+  participantName: string;
+  /**
+   * Número da OAB (se informado)
+   */
+  participantOab?: string | null;
+  /**
+   * Título do evento no momento da emissão
+   */
+  eventTitle: string;
+  eventStartDate?: string | null;
+  eventEndDate?: string | null;
+  /**
+   * Carga horária do evento/curso
+   */
+  workload?: number | null;
+  /**
+   * Como o certificado foi emitido
+   */
+  emissionType: 'automatic' | 'manual';
+  issuedAt: string;
+  /**
+   * Usuário que emitiu manualmente o certificado
+   */
+  issuedBy?: (number | null) | User;
+  /**
+   * Percentual de presença no momento da emissão
+   */
+  attendancePercentage?: number | null;
+  surveyCompletedAt?: string | null;
+  /**
+   * Certificado em formato PDF
+   */
+  pdfFile?: (number | null) | File;
+  /**
+   * Número de vezes que o certificado foi baixado
+   */
+  downloadCount?: number | null;
+  lastDownloadAt?: string | null;
+  emailSentAt?: string | null;
+  /**
+   * Código único para validação do certificado
+   */
+  certificateCode: string;
+  status: 'issued' | 'revoked';
+  revokedAt?: string | null;
+  revokedReason?: string | null;
+  /**
+   * Link para validação online do certificado
+   */
+  validationUrl?: string | null;
+  /**
+   * Usuário que criou este registro
+   */
+  createdBy?: (number | null) | User;
+  /**
+   * Usuário que fez a última edição
+   */
+  editedBy?: (number | null) | User;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -319,6 +852,34 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'files';
         value: number | File;
+      } | null)
+    | ({
+        relationTo: 'rooms';
+        value: number | Room;
+      } | null)
+    | ({
+        relationTo: 'speakers';
+        value: number | Speaker;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'registrations';
+        value: number | Registration;
+      } | null)
+    | ({
+        relationTo: 'tickets';
+        value: number | Ticket;
+      } | null)
+    | ({
+        relationTo: 'check-ins';
+        value: number | CheckIn;
+      } | null)
+    | ({
+        relationTo: 'certificates';
+        value: number | Certificate;
       } | null)
     | ({
         relationTo: 'fileFolders';
@@ -489,6 +1050,231 @@ export interface FilesSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "rooms_select".
+ */
+export interface RoomsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  capacity?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers_select".
+ */
+export interface SpeakersSelect<T extends boolean = true> {
+  name?: T;
+  professionalTitle?: T;
+  description?: T;
+  photo?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  featuredImage?: T;
+  startDate?: T;
+  endDate?: T;
+  location?: T;
+  maxRegistrations?: T;
+  refundDays?: T;
+  eventType?: T;
+  modality?: T;
+  scope?: T;
+  registrationType?: T;
+  externalRegistrationUrl?: T;
+  categories?:
+    | T
+    | {
+        title?: T;
+        price?: T;
+        description?: T;
+        maxQuantity?: T;
+        id?: T;
+      };
+  discountGroups?:
+    | T
+    | {
+        minTickets?: T;
+        maxTickets?: T;
+        discountType?: T;
+        discountValue?: T;
+        description?: T;
+        id?: T;
+      };
+  schedule?:
+    | T
+    | {
+        room?: T;
+        date?: T;
+        startTime?: T;
+        endTime?: T;
+        title?: T;
+        description?: T;
+        speakers?: T;
+        capacity?: T;
+        id?: T;
+      };
+  hasCertificate?: T;
+  certificateConfig?:
+    | T
+    | {
+        emissionType?: T;
+        minimumAttendancePercentage?: T;
+        requiresSurvey?: T;
+        certificateTemplate?: T;
+        certificateRules?: T;
+      };
+  status?: T;
+  slug?: T;
+  registrationDeadline?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "registrations_select".
+ */
+export interface RegistrationsSelect<T extends boolean = true> {
+  buyerName?: T;
+  buyerEmail?: T;
+  buyerPhone?: T;
+  buyerCpf?: T;
+  buyerCep?: T;
+  buyerOab?: T;
+  event?: T;
+  ticketsAmount?: T;
+  discountAmount?: T;
+  totalAmount?: T;
+  ticketCount?: T;
+  discountGroupApplied?: T;
+  paymentMethod?: T;
+  paymentStatus?: T;
+  paymentId?: T;
+  checkoutId?: T;
+  checkoutUrl?: T;
+  paidAt?: T;
+  refundRequested?: T;
+  refundRequestedAt?: T;
+  refundReason?: T;
+  refundStatus?: T;
+  refundDeniedReason?: T;
+  refundedAt?: T;
+  refundId?: T;
+  referenceId?: T;
+  status?: T;
+  buyerIsParticipant?: T;
+  notes?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "tickets_select".
+ */
+export interface TicketsSelect<T extends boolean = true> {
+  participantName?: T;
+  participantEmail?: T;
+  participantPhone?: T;
+  participantOab?: T;
+  registration?: T;
+  event?: T;
+  categoryTitle?: T;
+  categoryPrice?: T;
+  categoryId?: T;
+  selectedSchedule?:
+    | T
+    | {
+        scheduleId?: T;
+        room?: T;
+        activityTitle?: T;
+        date?: T;
+        startTime?: T;
+        endTime?: T;
+        id?: T;
+      };
+  hasCheckedIn?: T;
+  checkInCount?: T;
+  attendancePercentage?: T;
+  surveyCompleted?: T;
+  surveyCompletedAt?: T;
+  certificateEligible?: T;
+  certificateIssued?: T;
+  ticketCode?: T;
+  status?: T;
+  qrCode?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "check-ins_select".
+ */
+export interface CheckInsSelect<T extends boolean = true> {
+  ticket?: T;
+  event?: T;
+  type?: T;
+  room?: T;
+  scheduleId?: T;
+  date?: T;
+  checkedInAt?: T;
+  method?: T;
+  deviceInfo?: T;
+  notes?: T;
+  createdBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "certificates_select".
+ */
+export interface CertificatesSelect<T extends boolean = true> {
+  ticket?: T;
+  event?: T;
+  participantName?: T;
+  participantOab?: T;
+  eventTitle?: T;
+  eventStartDate?: T;
+  eventEndDate?: T;
+  workload?: T;
+  emissionType?: T;
+  issuedAt?: T;
+  issuedBy?: T;
+  attendancePercentage?: T;
+  surveyCompletedAt?: T;
+  pdfFile?: T;
+  downloadCount?: T;
+  lastDownloadAt?: T;
+  emailSentAt?: T;
+  certificateCode?: T;
+  status?: T;
+  revokedAt?: T;
+  revokedReason?: T;
+  validationUrl?: T;
+  createdBy?: T;
+  editedBy?: T;
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
