@@ -357,3 +357,77 @@ The PagBank Recurring Payments API generates webhooks for five event categories:
   ]
 }
 ```
+
+---
+
+## Create Payment Refund
+
+Create a **full refund** for a payment associated with a recurring billing charge.
+
+**Method:** `POST`  
+**URL:**
+
+> 📘 For more details about recurring payments behavior, see the **Recurring Payments Service Guide** and the specific **Payments feature guide**.
+
+---
+
+### Important Notes
+
+🚧 **Partial refunds are not supported**
+
+Partial refunds are **not available** via this endpoint.
+
+If a partial refund is required, you must use one of the following channels:
+
+- Mobile (terminals or app)
+- Internet Banking
+- Customer support (call center)
+- Email: `cancelarvendas@pagseguro.com`
+- External API (cancellation API)
+
+---
+
+## Path Parameters
+
+| Parameter    | Type     | Required | Description                                                                                          |
+| ------------ | -------- | -------- | ---------------------------------------------------------------------------------------------------- |
+| `payment_id` | `string` | ✅ Yes   | Unique identifier of the payment to be refunded. Format: `PAYM_XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX` |
+
+---
+
+## Headers
+
+| Header              | Value            | Required | Notes                                                                                       |
+| ------------------- | ---------------- | -------- | ------------------------------------------------------------------------------------------- |
+| `Authorization`     | `Bearer <token>` | ✅ Yes   | Authentication token                                                                        |
+| `x-idempotency-key` | `string`         | No       | Alphanumeric key (no special chars). Guarantees idempotency for **48 hours**. Max 200 chars |
+
+---
+
+## Request Body
+
+### `amount` object
+
+| Field      | Type      | Required | Description                                                                |
+| ---------- | --------- | -------- | -------------------------------------------------------------------------- |
+| `value`    | `integer` | ✅ Yes   | Refund amount **in cents** (max 9 digits). Example: R$ 1,500.99 → `150099` |
+| `currency` | `string`  | ✅ Yes   | ISO 4217 currency code. Only `BRL` is supported                            |
+
+> ℹ️ Even though the endpoint supports specifying an amount, **only full refunds are currently processed**.
+
+---
+
+## Example Request
+
+```http
+POST /payments/PAYM_XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX/refunds
+Authorization: Bearer <token>
+x-idempotency-key: refund-2024-08-01-001
+Content-Type: application/json
+{
+  "amount": {
+    "value": 150099,
+    "currency": "BRL"
+  }
+}
+```
