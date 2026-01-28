@@ -69,6 +69,10 @@ export interface Config {
   collections: {
     users: User;
     files: File;
+    'event-rooms': EventRoom;
+    speakers: Speaker;
+    events: Event;
+    'event-registrations': EventRegistration;
     'payload-kv': PayloadKv;
     fileFolders: FolderInterface;
     'payload-locked-documents': PayloadLockedDocument;
@@ -83,6 +87,10 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     files: FilesSelect<false> | FilesSelect<true>;
+    'event-rooms': EventRoomsSelect<false> | EventRoomsSelect<true>;
+    speakers: SpeakersSelect<false> | SpeakersSelect<true>;
+    events: EventsSelect<false> | EventsSelect<true>;
+    'event-registrations': EventRegistrationsSelect<false> | EventRegistrationsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     fileFolders: FileFoldersSelect<false> | FileFoldersSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
@@ -290,6 +298,246 @@ export interface FolderInterface {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-rooms".
+ */
+export interface EventRoom {
+  id: number;
+  /**
+   * Nome identificador da sala de evento
+   */
+  title: string;
+  /**
+   * Informações adicionais sobre a sala
+   */
+  description?: string | null;
+  /**
+   * Número máximo de pessoas que a sala comporta
+   */
+  capacity: number;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers".
+ */
+export interface Speaker {
+  id: number;
+  /**
+   * Nome completo do palestrante
+   */
+  name: string;
+  /**
+   * Título ou especialidade profissional
+   */
+  professionalTitle: string;
+  /**
+   * Informações adicionais sobre o palestrante
+   */
+  description?: string | null;
+  /**
+   * Foto de perfil do palestrante
+   */
+  photo?: (number | null) | File;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events".
+ */
+export interface Event {
+  id: number;
+  /**
+   * Nome do evento
+   */
+  title: string;
+  /**
+   * When enabled, the slug will auto-generate from the title field on save and autosave.
+   */
+  generateSlug?: boolean | null;
+  slug: string;
+  /**
+   * Informações sobre o evento
+   */
+  description: string;
+  /**
+   * Endereço completo do evento
+   */
+  location: string;
+  /**
+   * Imagem de capa do evento
+   */
+  image: number | File;
+  /**
+   * Como o evento será realizado
+   */
+  modality: 'in-person' | 'virtual' | 'hybrid';
+  /**
+   * Quem pode participar do evento
+   */
+  scope: 'institutional' | 'public';
+  /**
+   * Data de início
+   */
+  startDate: string;
+  /**
+   * Data de encerramento
+   */
+  endDate: string;
+  /**
+   * Horário de início
+   */
+  startTime: string;
+  /**
+   * Horário de encerramento
+   */
+  endTime: string;
+  /**
+   * Como serão feitas as inscrições
+   */
+  registrationType: 'internal' | 'external';
+  /**
+   * URL para inscrição externa
+   */
+  externalRegistrationUrl?: string | null;
+  /**
+   * Número máximo de inscrições
+   */
+  registrationLimit?: number | null;
+  /**
+   * Quantidade de dias para solicitar reembolso
+   */
+  refundDays?: number | null;
+  /**
+   * Data e hora de início das inscrições
+   */
+  registrationStart?: string | null;
+  /**
+   * Data e hora de encerramento das inscrições
+   */
+  registrationEnd?: string | null;
+  /**
+   * Minutos antes do evento para permitir check-in
+   */
+  checkinMinutesBefore?: number | null;
+  /**
+   * Categorias de inscrição com valores diferentes
+   */
+  registrationCategories?:
+    | {
+        title: string;
+        /**
+         * Valor em centavos (ex: R$ 100,00 = 10000)
+         */
+        value: number;
+        description?: string | null;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Descontos por quantidade de inscrições
+   */
+  discountGroups?:
+    | {
+        minQuantity: number;
+        maxQuantity?: number | null;
+        type: 'percentage' | 'fixed';
+        /**
+         * Valor do desconto
+         */
+        value: number;
+        id?: string | null;
+      }[]
+    | null;
+  /**
+   * Se marcado, o evento emitirá certificados
+   */
+  hasCertificate?: boolean | null;
+  /**
+   * Como os certificados serão emitidos
+   */
+  certificateIssuanceType?: ('manual' | 'automatic') | null;
+  /**
+   * Arquivo de modelo do certificado
+   */
+  certificateTemplate?: (number | null) | File;
+  /**
+   * Presença mínima para emissão de certificado
+   */
+  certificateIssuanceRule?: ('any' | '25%' | '50%' | '75%' | 'full') | null;
+  /**
+   * Programação do evento
+   */
+  activities: {
+    title: string;
+    description?: string | null;
+    /**
+     * Sala onde a atividade acontecerá
+     */
+    room: number | EventRoom;
+    /**
+     * Data da atividade
+     */
+    activityDate: string;
+    /**
+     * Horário de início
+     */
+    activityStartTime: string;
+    /**
+     * Horário de encerramento
+     */
+    activityEndTime: string;
+    /**
+     * Palestrantes desta atividade
+     */
+    speakers?: (number | Speaker)[] | null;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-registrations".
+ */
+export interface EventRegistration {
+  id: number;
+  /**
+   * Nome completo
+   */
+  participantName: string;
+  /**
+   * Email para contato
+   */
+  participantEmail: string;
+  /**
+   * Telefone de contato
+   */
+  participantPhone: string;
+  /**
+   * Número da OAB (opcional)
+   */
+  oabNumber?: string | null;
+  /**
+   * Evento no qual o participante está se inscrevendo
+   */
+  event: number | Event;
+  /**
+   * Atividades que o participante deseja participar
+   */
+  selectedActivities: {
+    /**
+     * ID da atividade do evento
+     */
+    activityId: string;
+    id?: string | null;
+  }[];
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -319,6 +567,22 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'files';
         value: number | File;
+      } | null)
+    | ({
+        relationTo: 'event-rooms';
+        value: number | EventRoom;
+      } | null)
+    | ({
+        relationTo: 'speakers';
+        value: number | Speaker;
+      } | null)
+    | ({
+        relationTo: 'events';
+        value: number | Event;
+      } | null)
+    | ({
+        relationTo: 'event-registrations';
+        value: number | EventRegistration;
       } | null)
     | ({
         relationTo: 'fileFolders';
@@ -489,6 +753,108 @@ export interface FilesSelect<T extends boolean = true> {
               filename?: T;
             };
       };
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-rooms_select".
+ */
+export interface EventRoomsSelect<T extends boolean = true> {
+  title?: T;
+  description?: T;
+  capacity?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "speakers_select".
+ */
+export interface SpeakersSelect<T extends boolean = true> {
+  name?: T;
+  professionalTitle?: T;
+  description?: T;
+  photo?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "events_select".
+ */
+export interface EventsSelect<T extends boolean = true> {
+  title?: T;
+  generateSlug?: T;
+  slug?: T;
+  description?: T;
+  location?: T;
+  image?: T;
+  modality?: T;
+  scope?: T;
+  startDate?: T;
+  endDate?: T;
+  startTime?: T;
+  endTime?: T;
+  registrationType?: T;
+  externalRegistrationUrl?: T;
+  registrationLimit?: T;
+  refundDays?: T;
+  registrationStart?: T;
+  registrationEnd?: T;
+  checkinMinutesBefore?: T;
+  registrationCategories?:
+    | T
+    | {
+        title?: T;
+        value?: T;
+        description?: T;
+        id?: T;
+      };
+  discountGroups?:
+    | T
+    | {
+        minQuantity?: T;
+        maxQuantity?: T;
+        type?: T;
+        value?: T;
+        id?: T;
+      };
+  hasCertificate?: T;
+  certificateIssuanceType?: T;
+  certificateTemplate?: T;
+  certificateIssuanceRule?: T;
+  activities?:
+    | T
+    | {
+        title?: T;
+        description?: T;
+        room?: T;
+        activityDate?: T;
+        activityStartTime?: T;
+        activityEndTime?: T;
+        speakers?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "event-registrations_select".
+ */
+export interface EventRegistrationsSelect<T extends boolean = true> {
+  participantName?: T;
+  participantEmail?: T;
+  participantPhone?: T;
+  oabNumber?: T;
+  event?: T;
+  selectedActivities?:
+    | T
+    | {
+        activityId?: T;
+        id?: T;
+      };
+  updatedAt?: T;
+  createdAt?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

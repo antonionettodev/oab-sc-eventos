@@ -10,6 +10,10 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import { Users } from './collections/users'
 import { Files } from './collections/files'
+import { EventRooms } from './collections/event-rooms'
+import { Speakers } from './collections/speakers'
+import { Events } from './collections/events'
+import { EventRegistrations } from './collections/event-registrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -37,7 +41,7 @@ export default buildConfig({
       },
     },
   },
-  collections: [Users, Files],
+  collections: [Users, Files, EventRooms, Speakers, Events, EventRegistrations],
   editor: lexicalEditor(),
   secret: process.env.PAYLOAD_SECRET || '',
   typescript: {
