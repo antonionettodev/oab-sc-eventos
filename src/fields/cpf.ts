@@ -51,7 +51,7 @@ export const cpfField = (options: CpfFieldOptions = {}): Field => ({
   hooks: {
     beforeChange: [formatCpfHook],
   },
-  validate: (value) => {
+  validate: (value: string | null | undefined) => {
     if (!value) return true
     if (!validateCpf(value)) {
       return 'CPF inválido'

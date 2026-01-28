@@ -27,7 +27,7 @@ export const phoneField = (options: PhoneFieldOptions = {}): Field => ({
   hooks: {
     beforeChange: [formatPhoneHook],
   },
-  validate: (value) => {
+  validate: (value: string | null | undefined) => {
     if (!value) return true
     const digits = value.replace(/\D/g, '')
     if (digits.length < 10 || digits.length > 11) {

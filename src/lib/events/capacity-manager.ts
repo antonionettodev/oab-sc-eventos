@@ -147,7 +147,7 @@ export async function checkRoomCapacity(
   const scheduleOccupancy: Record<string, number> = {}
 
   for (const registration of paidRegistrations.docs) {
-    const tickets = (registration as Record<string, unknown>).tickets as Array<{
+    const tickets = (registration as unknown as Record<string, unknown>).tickets as Array<{
       selectedSchedule?: SelectedScheduleItem[]
     }> | undefined
 

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getPayload } from 'payload'
 import config from '@payload-config'
+import type { Registration, Event } from '@/payload-types'
 
 interface PagBankWebhookPayload {
   id: string
@@ -22,12 +23,12 @@ export async function POST(request: NextRequest) {
     const payload = await getPayload({ config })
     const body: PagBankWebhookPayload = await request.json()
 
-    payload.logger.info('PagBank webhook received:', JSON.stringify(body, null, 2))
+    console.log('PagBank webhook received:', JSON.stringify(body, null, 2))
 
     const { reference_id, charges } = body
 
     if (!reference_id) {
-      payload.logger.error('Missing reference_id in webhook')
+      console.error('Missing reference_id in webhook')
       return NextResponse.json({ error: 'Missing reference_id' }, { status: 400 })
     }
 
@@ -40,11 +41,11 @@ export async function POST(request: NextRequest) {
     })
 
     if (registrations.docs.length === 0) {
-      payload.logger.error(`Registration not found for order: ${reference_id}`)
+      console.error(`Registration not found for order: ${reference_id}`)
       return NextResponse.json({ error: 'Registration not found' }, { status: 404 })
     }
 
-    const registration = registrations.docs[0]
+    const registration = registrations.docs[0] as Registration
 
     if (charges && charges.length > 0) {
       const charge = charges[0]
@@ -83,9 +84,9 @@ export async function POST(request: NextRequest) {
         updateData.paidAt = new Date(charge.paid_at).toISOString()
 
         if (registration.tickets && Array.isArray(registration.tickets)) {
-          updateData.tickets = registration.tickets.map((ticket: Record<string, unknown>) => ({
+          updateData.tickets = registration.tickets.map((ticket) => ({
             ...ticket,
-            ticketStatus: 'confirmed',
+            ticketStatus: 'confirmed' as const,
           }))
         }
       }
@@ -106,26 +107,30 @@ export async function POST(request: NextRequest) {
         data: updateData,
       })
 
-      payload.logger.info(`Updated registration ${registration.id} with payment status: ${paymentStatus}`)
+      console.log(`Updated registration ${registration.id} with payment status: ${paymentStatus}`)
 
       if (paymentStatus === 'paid') {
         try {
-          const event = typeof registration.event === 'string'
-            ? await payload.findByID({ collection: 'events', id: registration.event })
-            : registration.event
+          const eventId = typeof registration.event === 'number'
+            ? registration.event
+            : (registration.event as Event).id
+
+          const event = typeof registration.event === 'number'
+            ? await payload.findByID({ collection: 'events', id: eventId })
+            : registration.event as Event
 
           if (event) {
             const ticketCount = registration.tickets?.length || 0
             await payload.update({
               collection: 'events',
-              id: typeof registration.event === 'string' ? registration.event : registration.event.id,
+              id: eventId,
               data: {
-                currentRegistrations: (event.currentRegistrations || 0) + ticketCount,
+                currentRegistrations: ((event as Event).currentRegistrations || 0) + ticketCount,
               },
             })
           }
         } catch (error) {
-          payload.logger.error('Error updating event registration count:', error)
+          console.error('Error updating event registration count:', error)
         }
       }
     }

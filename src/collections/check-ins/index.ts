@@ -213,7 +213,7 @@ export const CheckIns: CollectionConfig = {
               })
             }
           } catch (error) {
-            req.payload.logger.error('Error updating ticket status after check-in:', error)
+            console.error('Error updating ticket status after check-in:', error)
           }
         }
         return doc

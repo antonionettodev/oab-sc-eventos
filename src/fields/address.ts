@@ -37,7 +37,7 @@ export const addressFields = (options: AddressFieldOptions = {}): Field => ({
           hooks: {
             beforeChange: [formatCepHook],
           },
-          validate: (value) => {
+          validate: (value: string | null | undefined) => {
             if (!value) return true
             const digits = value.replace(/\D/g, '')
             if (digits.length !== 8) {

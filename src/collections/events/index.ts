@@ -522,7 +522,7 @@ export const Events: CollectionConfig = {
                         placeholder: '09:00',
                         description: 'Formato: HH:MM',
                       },
-                      validate: (value) => {
+                      validate: (value: string | null | undefined) => {
                         if (!value) return true
                         const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
                         if (!timeRegex.test(value)) {
@@ -541,7 +541,7 @@ export const Events: CollectionConfig = {
                         placeholder: '10:30',
                         description: 'Formato: HH:MM',
                       },
-                      validate: (value) => {
+                      validate: (value: string | null | undefined) => {
                         if (!value) return true
                         const timeRegex = /^([01]?[0-9]|2[0-3]):[0-5][0-9]$/
                         if (!timeRegex.test(value)) {
@@ -693,6 +693,15 @@ export const Events: CollectionConfig = {
                   defaultValue: 'event',
                   admin: {
                     description: 'Define como o check-in será registrado',
+                  },
+                },
+                {
+                  name: 'allowMultipleCheckIns',
+                  type: 'checkbox',
+                  label: 'Permitir Múltiplos Check-ins',
+                  defaultValue: false,
+                  admin: {
+                    description: 'Permite que o mesmo ingresso faça check-in mais de uma vez (útil para eventos multi-dia)',
                   },
                 },
                 {
